@@ -1,0 +1,21 @@
+\contentsline {section}{\numberline {1}MIDIS开发环境配置}{1}{section.1}
+\contentsline {subsection}{\numberline {1.1}Python与相关库安装}{1}{subsection.1.1}
+\contentsline {subsection}{\numberline {1.2}SSH服务配置}{2}{subsection.1.2}
+\contentsline {subsection}{\numberline {1.3}数据库配置}{3}{subsection.1.3}
+\contentsline {section}{\numberline {2}MIDIS主体框架}{7}{section.2}
+\contentsline {subsection}{\numberline {2.1}wxPydocview框架}{7}{subsection.2.1}
+\contentsline {subsection}{\numberline {2.2}服务插件的编写}{10}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}本章小结}{14}{subsection.2.3}
+\contentsline {section}{\numberline {3}分布式计算的实现}{15}{section.3}
+\contentsline {subsection}{\numberline {3.1}任务计算流程}{15}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}分布式实现}{16}{subsection.3.2}
+\contentsline {subsection}{\numberline {3.3}任务管理}{22}{subsection.3.3}
+\contentsline {section}{\numberline {4}数据库实现}{26}{section.4}
+\contentsline {subsection}{\numberline {4.1}数据库接口类与数据库工具使用}{26}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}数据库与仿真数据交互}{31}{subsection.4.2}
+\contentsline {subsection}{\numberline {4.3}基于数据库的数据分析插件}{34}{subsection.4.3}
+\contentsline {section}{\numberline {5}MIDIS用户操作流程}{38}{section.5}
+\contentsline {subsection}{\numberline {5.1}MIDIS具体操作流程}{38}{subsection.5.1}
+\contentsline {subsection}{\numberline {5.2}MIDIS操作简化流程}{48}{subsection.5.2}
+\contentsline {subsection}{\numberline {5.3}MIDIS源代码打包}{49}{subsection.5.3}
+\contentsfinish 

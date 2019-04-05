@@ -1,0 +1,69 @@
+\section{MIDIS开发环境配置}
+
+\maintopics{
+    \myitem{Python与相关库安装}
+    \myitem{SSH配置}
+    \myitem{数据库配置}
+}
+\subsection{Python与相关库安装}
+
+\mycontent{由于Python各版本之间的兼容性，MIDIS中需要的第三方库比较多，所以对Python环境与库的版本都有一定要求。MIDIS是使用Python2.7.13 进行开发，如果使用官网Python，还需要安装许多额外的第三方库。{\color{red}\textbf{Anconda 2 中 2.7 以上版本}}集成了很多科学计算的相关库，只需要再装几个库即可运行。如图1-1所示是需要额外添加的库及其版本号，其中红色部分是使用Anconda环境后需要安装的库。}
+
+\myfig{0.55}{0-1}{MIDIS中需要添加的第三方库}
+
+\newpage
+
+\mycontent{由于相关库版本的不断更新，有些库在网上难以找到。{\color{red}\textbf{请开发人员务必对相关库进行保存备份。}}MIDIS的编辑器推荐使用Eclipse或VScode。}
+
+\subsection{SSH服务配置}
+
+\mycontent{MIDIS分布式计算是利用局域网内的机组互相通信来实现的，首先我们需要通过交换机组建一个局域网机组，局域网内的机器安装freeSSH软件， freeSSHd是SSH服务器的免费实现。它通过Internet等提供强大的加密和身份验证。由于buit-in SFTP服务器，用户可以打开远程控制台甚至访问他们的远程文件。}
+\myfig{0.9}{5}{FreeSSHd安装流程}
+\mycontent{针对MIDIS中的freeSSH，需要一些特定的设置，接下来会详细说明，首先是软件安装，我们使用的是freeSSHd 1.2.6版本。如图1-2所示，前面的操作按照默认选项即可，关键在于最后的两个步骤，需要按照图中红色方框操作。}
+\myfig{0.9}{6}{FreeSSHd用户配置}
+
+\mycontent{如图1-3所示，软件安装成功后，需要设置用户和启动服务，在Users选项卡中Add一个用户，用户名需要和计算机的用户名一致，实验室机群电脑的用户名都是Administrator，认证方式选择密码认证，用户名和密码都需要和MIDIS中相关代码保持一致，勾选红色方框的选项用来开启相关服务，最后查看Server Status，开启服务，出现绿色状态表示配置成功。通过FreeSSHd接收的文件会存储在 C:.Users.用户名..MIDIS 目录下。}
+
+
+\subsection{数据库配置}
+
+\mycontent{MIDIS中使用的是非关系型数据库Mongodb,首先安装Mongodb,这里推荐使用 3.4.4 版本。安装之后，设置环境变量如图1-4所示。}
+
+\mycontent{然后通过下面脚本启动数据库服务。只有一个变量-dbpath用来指定数据保存路径。}
+
+\begin{lstlisting}
+mongod -dbpath D:\dbpath
+pause
+\end{lstlisting}
+
+\mycontent{数据库服务启动之后，需要创建我们需要的数据库，则可以通过以下脚本创建用户名为IEI3,密码为IEI的数据库 HFSSDataBase。以此类推，可以创建其他不同用户下的不同名称的数据库。}
+
+\begin{lstlisting}
+db.createUser(
+...   {
+...     user: "IEI3",
+...     pwd: "IEI",
+...     roles: [ { role: "readWrite", db: 'HFSSDataBase'} ]
+...   }
+... )
+\end{lstlisting}
+
+
+\newpage
+
+\myfig{0.6}{0-2}{Mongodb环境变量设置}
+
+\mycontent{为方便查看数据库，推荐安装Mongodb可视化工具 RoboMongo 1.0.0，效果图如图1-5所示。}
+
+\myfig{0.7}{0-3}{RoboMongo效果图}
+
+\mycontent{这里要说一下,对于数据库IP和服务器IP的设置，如果是早些版本，这些IP可能写在了
+代码里面，如果使用老版本只能在代码中修改这两种IP地址，如果是新的版本，可以通过图1-6
+所示的操作进行配置，配置界面如图1-7所示。}
+
+\myfig{0.4}{0-5}{服务器IP配置操作1}
+
+\mycontent{通过+操作可以添加新的Server IP，这里密码没有进行加密，主要是考虑到有时需要
+通过直接在配置文件("ipconfig.ini")中添加数据。数据库IP地址，对于本机而已就是 127.0.0.1。}
+
+\myfig{0.8}{0-4}{服务器IP配置操作2}

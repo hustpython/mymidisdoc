@@ -1,0 +1,186 @@
+% 导入包
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ProvidesPackage{midisdoc}                        %
+\usepackage[headheight=10pt,top=1cm,bottom=1cm, %
+            left=1.5cm,right=1.5cm,includehead,     %
+            includefoot]{geometry}                  %
+\usepackage{booktabs}                               % 标签
+\usepackage[dvips]{graphicx}                        % 图片包
+\usepackage{color}                                  % 颜色
+\usepackage{setspace}                               % 调整行间距
+\usepackage[font=small]{caption}                    % caption字体设置小一号
+\usepackage{fontspec, xunicode, xltxtra}            %
+\usepackage{xeCJK}                                  % 中文字体
+\defaultfontfeatures{Mapping=tex-text}              % 如果没有它，会有一些 tex 特殊字符无法正常使用，比如连字符。
+\usepackage{makecell}                               % 改变表格横线样式， Xhline;Xcline
+\usepackage{url}                                    % 超链接
+%\usepackage{mathrsfs}                               % 数学花体
+\usepackage{ragged2e}                               % 设置两端对齐，也没起作用
+\usepackage{tabularx}                               % 表格
+\usepackage{fontenc}                                % 字体
+\usepackage{bbding}                                 %
+\usepackage{pifont}                                 %
+\usepackage{wasysym}                                %
+\usepackage{amssymb}                                %
+\usepackage{shapepar}                               % 形状
+\usepackage[toc,page]{appendix}                               % 附录
+\usepackage{listings}                               % 代码列表
+\usepackage{xcolor}                                 % 颜色支持
+\usepackage{framed}  
+\usepackage[center]{titlesec}
+\usepackage{tcolorbox}
+\usepackage{enumitem} \setenumerate[1]{itemindent=-2em,itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=0pt} \setitemize[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt} \setdescription{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=0pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[colorlinks=true,                        %
+linkcolor=black,                                    %
+anchorcolor=black,                                  % 设置书签
+citecolor=black                                     %
+]{hyperref}                                         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\myitem}[1]
+{
+    \begin{itemize}[itemindent=-0.2em]
+    \item[\bfseries\large$\Diamond$]~\large{#1}
+    \end{itemize}
+}
+\newcommand{\maintopics}[1]
+{
+    \begin{tcolorbox}[title = {\LARGE\bfseries{本章主要内容} },coltitle=black,colbacktitle=black!21,colframe=white]
+        #1
+    \end{tcolorbox}
+}
+\newcommand{\myitemxiaojie}[1]
+{
+    \begin{itemize}[itemindent=-0.2em]
+    \item[\bfseries\large$\bullet$]~\large{#1}
+    \end{itemize}
+}
+\newcommand{\xiaojie}[1]
+{
+    \begin{tcolorbox}[title = {\LARGE\bfseries{本章小结} },coltitle=black,colbacktitle=white,colframe=white]
+        #1
+    \end{tcolorbox}
+}
+% 字体设置
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                                    
+\setmainfont{Times New Roman}{\zihao{3}}                  %英文默认字体
+\setCJKmainfont{宋体}{\zihao{3}}                          %中文默认字体为宋体，小四
+\setstretch{1.8}                                           % 默认行间距1.8
+%\titleformat*{\section}[display]{\centering\kaishu\zihao{2}\bfseries\color{black}}{第\,\section\,部分}{1em}{%}
+\titleformat{\section}{\centering\Huge\kaishu\bfseries}{第\,\thesection\,章}{1em}{}
+\titleformat{\subsection}{\zihao{3}\kaishu\bfseries}{\thesubsection\,小节}{1em}{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\mycontent}[1]{
+    \setstretch{2} 
+    {\zihao{-3}{#1}}
+}
+% 页眉页码
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+\usepackage{fancyhdr}                                               %                                                        
+\pagestyle{fancy}  
+\fancyhead{}
+\fancyfoot{}           
+\renewcommand{\headrulewidth}{0pt}   
+\fancyhead[RO]{\zihao{3}\thepage} %奇数页眉的右边
+\fancyhead[LE]{\zihao{3}\thepage} %偶数页眉的左边                                              %                                                                      %
+\chead{\zihao{3}\heiti\bfseries\color{gray}{MIDIS\ 开\ 发\ 文\ 档}}                              
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% 代码列表
+\newcounter{codelistnum}
+\definecolor{shadecolor}{rgb}{0.6,0.6,0.6}
+%\textcolor[rgb]{0,0,1}{\kaishu\noindent 又想起你曾说的陪我到最后,暖色的梦变冰凉的枷锁,如果时光倒流我们又能抓得住什么}
+\newcommand{\mycodelist}[1]{
+\addtocounter{codelistnum}{1}
+\begin{shaded}
+ {\noindent\color{white}\zihao{4}代码清单{\arabic{section}-\thecodelistnum ~~ #1}}
+\end{shaded}
+}
+
+% 代码
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{graystr}{rgb}{0.45,0.45,0.45}
+\lstset{language=Python,
+       keywordstyle= \color{blue!70},
+       commentstyle=\color{red!50!green!50!blue!50},  
+       numbers=left, 
+       breaklines,
+       aboveskip=-1mm,
+       columns=flexible,
+       escapeinside=``,
+       numberstyle=\zihao{4}\color{gray},
+       basicstyle=\zihao{4}\color{graystr},
+       stringstyle=\color{mauve},
+       rulesepcolor= \color{ red!20!green!20!blue!20},
+       tabsize=2,
+       xleftmargin=0.8em}
+
+% 目录样式
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\contentsname}{\heiti\zihao{3}\bfseries{目 \ 录}}%目录居中
+\usepackage{titletoc}
+\titlecontents{section}[0mm]
+{\zihao{3}\heiti}
+{\filleft\contentslabel{1em}}
+{\hspace*{-1em}} %保证摘要等对齐  contentslabel的距离与此处的hspace大小相等,正负相反,即可对齐
+{\titlerule*{.}\contentspage} %设置页面与标题之间的空隙填充
+
+\titlecontents{subsection}[10mm] %设置标题1样式
+{\zihao{4}\heiti} %黑体四号
+{\contentslabel{2em}}
+{\hspace*{-2em}}
+{\titlerule*{.}\contentspage}
+
+\titlecontents{subsubsection}[20mm]
+{\fontsize{12pt}{20pt}\selectfont \CJKfamily{song}}
+{\contentslabel{3em}}
+{\hspace*{-3em}}
+{\titlerule*{.}\contentspage}
+
+\CTEXsetup[format={\zihao{3}\heiti\centering}]{section}% 正文中标题设置
+\CTEXsetup[format={\zihao{4}\heiti}]{subsection}       % 正文小标题设置
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\renewcommand{\theequation}{\arabic{section}-\arabic{equation}}
+\renewcommand{\thefigure}{\arabic{section}-\arabic{figure}}
+
+
+% 新章节时公式图片编码重置
+\makeatletter
+\@addtoreset{figure}{section}
+\makeatother
+
+\makeatletter
+\@addtoreset{codelistnum}{section}
+\makeatother
+
+\vspace{-0.8cm}  %调整图片与上文的垂直距离
+\setlength{\abovecaptionskip}{0.5cm}   %调整图片标题与图距离
+\setlength{\belowcaptionskip}{-0.8cm}   %调整图片标题与下文距离
+\captionsetup{labelformat=default,labelsep=space} %去除冒号
+\DeclareGraphicsExtensions{.eps,.ps,.png,.jpg} %对于同名图片的优先顺序调用
+\graphicspath{{figs/}} %设置图片路径为当前路径下的graphics文件夹
+\newcommand{\myfig}[3]{
+    {
+    \begin{figure}[htbp]
+        % caption放上面就会显示在图的上方，出现在下面就是出现在图的下方
+        % label的位置也有讲究
+        \begin{center}
+            \includegraphics[width=#1\textwidth]{#2}
+            \caption{#3}
+            \label{}
+        \end{center}
+    \end{figure}
+    }
+}
+\endinput
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

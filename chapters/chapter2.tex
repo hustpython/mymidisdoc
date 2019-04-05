@@ -1,0 +1,303 @@
+\newpage
+
+\section{分布式计算的实现}
+
+\maintopics{
+    \myitem{计算脚本编写}
+    \myitem{分布式框架}
+    \myitem{任务调度}
+}
+
+
+
+\subsection{任务计算流程}
+
+\mycontent{从一个初始模型到最后计算数据经历了很多过程，这其中与MIDIS中大部分函数都有直接或间接接触，当遇到具体的问题时都需要找到相关的函数进行细察，这里可以给出一些涉及到的文件，模型解析插件：Plugin-->modelanalyseplugin、
+算法服务插件：Plugin--->algorithmplugin、适应度插件：Plugin--->fitnessplugin、任务管理：Source--->tool--->TaskScheduleService.py。
+图3-1展示了计算过程中主要调用函数，MIDIS中是通过配置文件来保存一些设置数据。
+ParamDict.ini 保存了模型的全部变量信息、端口信息、频率信息等。algorithm.ini中是算法信息。变量配置后产生variable.ini和restrict.ini
+用来保存优化的变量和变量限制条件。适应度配置文件fitness.ini中主要包括了需要评价的频段以及评价公式中的一些权重信息。通过modelModify函数产生新模型，新模型与vbs对应一起发送
+至服务器，最后服务器计算完毕返回计算结果文件至本地计算机，这个线程会一直存在一直到所有模型分发完毕。}
+
+\newpage
+
+\myfig{0.6}{2-1}{模型计算过程中主要流程图}
+
+\subsection{分布式实现}
+
+
+\mycontent{模型的具体运算是在FitnessPlugin和DistributedComputeService中，
+首先回到FitnessPlugin中的FitnessRun函数中去，这个函数是被算法插件直接调用，传入个体变量信息。为了符合面向对象编程的风格，我们将每一个模型的计算信息用一个计算单元类表示(class task\_unit(object)),类中有很多属性。
+属性的设置和获取通过 set和get 函数实现。比如代码清单3-1中,类的优化变量信息 self.varMatrix 是通过
+set\_varMatrix和get\_varMatrix分别进行设置和获取。同理，其他属性都可以通过该方式进行处理。}
+
+\mycodelist{计算单元类代码片段}
+
+\setstretch{1.2}
+
+\begin{lstlisting}
+class task_unit(object):
+    def __init__(self):
+        self._vbsfilepath = ""
+        self._vbsfilename = ""
+        self._vbskillname = ""
+        self.varMatrix=[]   
+        ...
+    def set_varMatrix(self, v_matrix):
+        self.varMatrix = v_matrix
+    def get_varMatrix(self):
+        return self.varMatrix
+    ...
+\end{lstlisting}
+
+\mycontent{每一代中所有个体(对于For算法整个遍历的个体组成一代)，通过 
+self.\_task\\
+\_list.append(Task\_unit) 保存到了self.\_task这个全局列表中。如何将这个变量传入到
+task\_classify中进行分类，通过对个体变量信息的比较，可以知道该个体是否在数据库中存在记录、是否是
+同代中相同个体、是否是未计算的个体，所有形成了三种任务分类即 
+task\_from\_db、task\_from\_other、task\_compute。前两者情况都不需要计算，从
+需要从数据库和其他个体那里获取数据。这里我们主要关心的是task\_compute中的个体。}
+
+\mycodelist{个体任务分类实现}
+
+\setstretch{1.2}
+
+\begin{lstlisting}
+def task_classify(self, tasks):
+    self.task_from_db = list()
+    self.task_from_other = list()
+    self.task_compute = list()
+    for task in tasks:
+        if task.is_finished():
+            self.task_from_db.append(task)
+            continue
+        if task.get_unit_number_point() != -1:   
+            self.task_from_other.append(task)
+            continue
+        self.task_compute.append(task)
+\end{lstlisting}
+
+
+\mycontent{通过 set\_taskunit\_func 函数来设置计算任务是使用本地计算还是远程计算。     
+如果设置为远程计算，则callback\_send,和callback\_receive函数必须定义，send是用来发送文件并执行命令，receive是用来检查
+服务器端的文件是否按计划的方式生成。如果生成，则要使用server.set\_used()}
+
+\mycodelist{根据用户的设置分别进行本地和远程计算}
+
+\setstretch{1.2}
+
+\begin{lstlisting}
+def set_taskunit_func(self,func,remote):
+    if remote:
+        self.send = self.callback_send
+        self.receive = self.callback_receive
+        self.post = self.post_process
+        self.do_task_func = func
+    else:
+        self.send = None
+        self.receive = None
+        self.post = None
+        self.do_task_func = self.local_compute
+    return True 
+\end{lstlisting}
+
+\mycontent{最后通过taskunit\_compute来启动计算,真正执行计算的是 do\_task\_func函数，那么
+这个函数是如何定义的呢？现在我们需要回到 DistributedComputeService.py 中去。}
+
+\setstretch{1.2}
+
+\begin{lstlisting}
+def taskunit_compute(self):
+    return self.do_task_func(self.send, self.receive, self.post, self.task_compute,schedulename)
+\end{lstlisting}
+
+\mycontent{在DistributedComputeService.py 中 下面这两行代码是用来定义do\_task\_func 函数的。}
+
+\setstretch{1.2}
+
+\begin{lstlisting}
+distrComputeService = wx.GetApp().GetService(DisCompute.distributedComputeService)
+self.fitservice.set_taskunit_func(distrComputeService.compute_start,True)    
+\end{lstlisting}
+
+\mycontent{下面重点是要回到在DistributedComputeService.py 中去，首先了解一下
+compute\_start的实现。通过 init\_server 确认可以使用的IP节点。
+loopcheck是一个多线程，这里为什么要使用多线程，如果使用单个线程，则我们的程序只能按照顺序依次执行函数
+即，我们的程序运行最后一步只会卡死在模型的循环计算中，一直持续到任务结束，但是我们希望此时还能进行其他界面上的操作，
+多线程可以保证这些操作都相互独立。}
+
+\mycodelist{compute\_start函数实现}
+
+\setstretch{1.2}
+
+\begin{lstlisting}
+def compute_start(self,callback_send, callback_receive, post_process, task_list,schedulename):
+    self.init_server(schedulename)   
+    loopcheck = threading.Thread(target = self.loop_check, args = (callback_send, callback_receive, post_process, task_list,schedulename))
+    loopcheck.start()
+    loopcheck.join()
+    return True
+\end{lstlisting}
+
+\mycontent{多线程真正执行的是目标函数 self.loop\_check，所以{\color{red}\textbf{整个分布式计算的核心就是这个函数}}。
+其实这个函数还是有点复杂，可以简化成图3-2所示的流程图。这里建立了一个待计算任务队列 task\_index和server的unused和used属性。
+首先对任务队列进行检查，这是跳出整个循环的标志，如果队列为空则表示计算完毕。当有计算任务时，对IP节点进行检查，当计算节点没有被占用
+时，给该节点分配任务队列中的第一个任务，同时任务队列中的任务被弹出(减少)，并设置该节点被战役。对于被占用的节点要检查是否有
+计算数据产生，如果有则释放该节点，如果没有表示计算出错，重新将给计算任务加入任务对列，以此循环。}
+
+\newpage
+
+\myfig{0.6}{2-2}{分布式计算简化流程}
+
+\mycodelist{loop\_check函数实现}
+
+\setstretch{1.2}
+
+\begin{lstlisting}
+def loop_check(self,callback_send, callback_receive, post_process, task_list,schedulename):
+        task_compute = task_list
+        task_num = len(task_list)
+        task_index = list()
+        for i in range(task_num-1,-1,-1):
+            task_index.append(i)
+        global Auto_Compute     
+        Auto_Compute = True 
+        server_inuse = 0
+        db = DBService.DBclass()
+        while(Auto_Compute):
+            #time.sleep(1)  
+            if not self.server_valid:
+                db.updateschedulelist(schedulename,-1,-1,-1,0,-1,-1,-1)
+                wx.CallAfter(pub.sendMessage, "update_listctrl")
+                break
+            status = db.queryspeci(schedulename)['status']
+            if status == 0:
+               t = threading.Thread(target=self.Ontaskkill(schedulename), name='LoopThread')
+               t.start()
+               t.join()
+               wx.CallAfter(pub.sendMessage, "update_listctrl")
+               Auto_Compute = False
+               return False
+            for server in self.server_valid:
+                time.sleep(0.05)  
+                #print server.ip,"this server"
+                if server.has_used():  
+                    if server.thread_run is not None and not server.thread_run.isAlive():
+                        if server.run_correct:  
+                            server.set_predict_time()
+                            if callback_receive(server):  
+                                server.set_unused()
+                                server_inuse -= 1
+                            else:
+                                server.set_unused()
+                                server_inuse -= 1
+                                task_index.append(server.task_index)
+                            if not server.has_used:
+                                server.init()
+                        else: 
+                            printMessage(u"远程主机%s %s可能出现错误"%(server.ip,server.user))
+                            server.set_unused()
+                            callback_receive(server)
+                            server_inuse -= 1 
+                            task_index.append(server.task_index)
+                elif task_index:
+                    index = task_index.pop()
+                    task = task_compute[index]
+                    server = self.select_server()
+                    server.set_task(task)
+                    server.task_index = index
+                    if callback_send(server):  
+                        server.set_used()
+                        server.set_start_time()
+                        server_inuse += 1
+                elif not task_index and server_inuse == 0 :
+                    Auto_Compute = False
+                    break
+        post_process()
+        for server in self.server_valid:
+            server.set_unused()
+            server.init()
+        return
+\end{lstlisting}
+
+\subsection{任务管理}
+
+\mycontent{任务管理的一个重要功能是将创建工程的过程进行持久化存储，从而达到提高任务管理效率的目的。我们知道MIDIS在创建工程过程中会产生很多配置文件，这些配置文件都需要我们
+通过点击相应的服务插件加载到内存中，所以只要我们想开启一个任务都相应这些点击操作，不然我们是无法知道这些配置文件的路径和内容。
+通过数据库将这些需要的配置文件路径信息和内容存储到数据库中是简化该流程的一个有效方式。}
+
+\mycontent{TaskScheduleService.py中的 Addtotask 类是用来将所有的服务、配置文件的路径以及一些
+用户输入信息，如：任务节点个数等信息存储到数据库中，存储时调用了 writepathtodb 函数。
+真正计算时调用的是如下函数，这是一个多线程启动的脚手架函数run。}
+\begin{lstlisting}
+def run(self):
+    self.algservice.AlgorithmRun(temp_schedulename,self.algParam,self.modelParam,self.configlist,self.fitservice,ReflectService) 
+\end{lstlisting}
+
+\mycontent{我们可以看出如果希望能够正确执行此命令，我们需要知道 算法服务插件 algservice、优化参数 algParam、模型参数 modelParam、适应度服务插件 fitservice。
+这些信息在我们初始创建工程时都可以通过一步步的配置过程加载到内存中，即通过 wx.GetApp().GetService 和
+wx.ConfigBase\_Get() 找到对应的服务插件和工程配置文件路径，具体实现如下。所以我们可以将这些信息存储至数据库中，直接从
+数据库中读取这些信息，传入执行函数开启任务。}
+
+\begin{lstlisting}
+self.algService = wx.GetApp().GetService(AlgorithmService.algorithmService).GetSpecifiedAlgorithm()  
+self.fitService = wx.GetApp().GetService(FitnessService.fitnessService).GetSpecifiedFitness()   
+config = wx.ConfigBase_Get()
+projectPath = config.Read('ProjectPath')
+\end{lstlisting}
+                  
+\mycontent{我们知道服务插件都是具体的类，我们是无法将整个类存储在数据库中的，我们该存储那些信息并且能够从这些
+信息中恢复出我们需要的服务插件，我们的所有算法信息、制约条件、数据库配置、适应度都在工程文件的目录中，我们只需要存储工程目录的路径即可找到
+这些信息，找到这些相信之后通过 getconalgParam() 函数 得到 
+algParam,modelParam,algName,fitName,Restrict。依次对算法插件的名称进行遍历，发现与 
+algName 相同的则加载该类。同理对算法插件进行遍历，找到与 fitName 相同的适应度插件。}
+
+\mycodelist{从数据库中解析服务插件}
+
+\setstretch{1.2}
+
+\begin{lstlisting}
+result = db.queryspeci(temp_schedulename)
+self.configlist = result['configlist']
+self.task_path= self.configlist[1]
+params = getconalgParam(self.task_path)
+self.algParam = params[0] 
+self.modelParam = params[1]
+algName = params[2]
+fitName = params[3]
+Restrict = params[4]
+algSer = wx.GetApp().GetService(AlgorithmService.algorithmService)
+for modelService in algSer._algorithmService:
+    if modelService._algorithmName == algName: 
+        self.algservice = modelService
+if hasattr(self.algservice,'SetRestrict'):
+    self.algservice.SetRestrict(Restrict)
+fitSer = wx.GetApp().GetService(FitnessService.fitnessService)
+for modelService in fitSer._fitnessService:
+    if modelService._fitnessName == fitName: #如：variable.ini中 algName = 'GA_Simple'    
+        self.fitservice = modelService
+distrComputeService = wx.GetApp().GetService(DisCompute.distributedComputeService)
+self.fitservice.set_taskunit_func(distrComputeService.compute_start,True)
+\end{lstlisting}
+
+\mycontent{任务管理的另外一个功能是对任务进行监控，即了解任务的进度、任务的运行情况、任务的Ip使用情况等。
+我们知道这些信息都是在任务进行过程中不断更新的，比如完成进度是在每一个个体计算完成后
+进行更新。这些信息是如果传入到任务管理的显示界面中呢，这里我们用到了一个重要的库 wx.lib.pubsub
+它是专门用来解决wx各种窗口之间的多线程问题，也就是说使用它可以将一个窗口的数据传递到另一个窗口并且立刻刷新。
+首先在窗口函数中通过 pub.subscribe() 函数注册命令，第一个参数
+为响应函数，第二个参数为其代号，当接收到这个代号时就会调用响应函数。然后通过
+wx.CallAfter() 函数进行发送命令，第一个参数为固定值表示在wx内发送信息，
+第二个参数是已经被注册了的代号。在 FitnessPlugin 和 DistributedComputeService 中
+都有wx.CallAfter()函数进行运行状态和完成进度的更新。}
+
+\mycodelist{使用pub来注册窗口命令}
+
+\setstretch{1.2}
+
+\begin{lstlisting}
+pub.subscribe(self.start_task,"starttask")
+pub.subscribe(self.update_list, "update_listctrl")
+
+wx.CallAfter(pub.sendMessage, "starttask")
+wx.CallAfter(pub.sendMessage, "starttask")    
+\end{lstlisting}

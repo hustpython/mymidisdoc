@@ -1,0 +1,72 @@
+{
+    "extensions.ignoreRecommendations": true,
+    "window.zoomLevel": -1,
+    "explorer.confirmDragAndDrop": false,
+    "workbench.iconTheme": "vscode-icons",
+    "terminal.integrated.rendererType": "dom",
+    "workbench.activityBar.visible": true,
+    "fileheader.Author": "mxq",
+    "fileheader.LastModifiedBy": "mxq",
+    ////////////////////////////////setting for tex
+    "latex-workshop.view.pdf.viewer": "tab",
+    "latex-workshop.latex.clean.enabled": false,
+    
+    "latex-workshop.latex.tools": [
+      {
+          "name": "latexmk",
+          "command": "latexmk",
+          "args": [
+              "-synctex=1",
+              "-interaction=nonstopmode",
+              "-file-line-error",
+              "-shell-escape",
+              "-pdf",
+              "%DOC%"
+          ]
+      },
+      {
+          "name": "xelatex",
+          "command": "xelatex",
+          "args": [
+              "-synctex=1",
+              "-interaction=nonstopmode",
+              "-file-line-error",
+              "-shell-escape",
+              "%DOC%"
+          ]
+      },
+      
+      {
+        "name": "xelatex",
+        "command": "xelatex",
+        "args": [
+            "-synctex=1",
+            "-interaction=nonstopmode",
+            "-file-line-error",
+            "-shell-escape",
+            "%DOC%"
+        ]
+    },
+    {
+        "name": "xelatex",
+        "command": "xelatex",
+        "args": [
+            "-synctex=1",
+            "-interaction=nonstopmode",
+            "-file-line-error",
+            "-shell-escape",
+            "%DOC%"
+        ]
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+      {
+          "name": "xelatex -> xelatex*2",
+          "tools": [
+              "xelatex",
+              "xelatex",
+              "xelatex"
+          ]
+      }
+  ],
+}

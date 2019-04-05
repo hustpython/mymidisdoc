@@ -1,0 +1,20 @@
+\documentclass[a4paper,punct,space,nospace,18pt, fancyhdr,twoside,fntef,UTF8]{ctexart}
+\usepackage{midisdoc}  
+\usepackage{pdfpages}
+
+\begin{document}
+\includepdf{fm.pdf} 
+\thispagestyle{empty}
+
+\tableofcontents                                   % 目录
+%\addcontentsline{toc}{section}{目 \ 录}            % 可以选择不添加目录中
+\newpage
+\setcounter{page}{1}
+\include{chapters/chapter0}
+\include{chapters/chapter1}
+\include{chapters/chapter2}
+\include{chapters/chapter3}
+\include{chapters/chapter4}
+
+
+\end{document}

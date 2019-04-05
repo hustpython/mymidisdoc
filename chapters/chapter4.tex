@@ -1,0 +1,171 @@
+\section{MIDIS用户操作流程}
+
+\maintopics{
+    \myitem{MIDIS操作流程}
+    \myitem{MIDIS在使用过程中常见问题}
+    \myitem{MIDIS打包操作}
+}
+
+\subsection{MIDIS具体操作流程}
+
+\mycontent{首先启动MIDIS，用户登录。用户名分别为：cst,hfss,root，密码为iei813。}
+
+\myfig{0.4}{use_1}{MIDIS用户登录界面}
+
+\mycontent{MIDIS的相关操作都需要依赖数据库，所以这里需要启动数据库范围，如图5-2所示 工具 -- 启动数据库。}
+
+\myfig{0.4}{use_0}{启动数据库}
+
+\newpage
+
+\mycontent{然后进入主界面，新建工程，这里需要选择工程的位置和设置工程的名字。如果需要打开已经创建的工程，则选择菜单栏：工程 ---> 打开工程。然后选择.project文件。具体操作如图5-3所示。}
+
+%{\color{red}\textbf{ll}}
+
+
+\myfig{0.9}{use_2}{创建工程和打开工程}
+
+
+\mycontent{在新建的工程下添加模型文件到工程中，具体操作如图5-4所示。这里可以分别选择HFSS文件和CST文件。\color{red}\textbf{这里需要注意的是如果是添加CST文件，则需要将该CST文件通过CST软件打开，这时会产生一个CST工程目录文件，工程目录中的文件才是我们需要解析的。}}
+
+
+\myfig{0.9}{use_3}{添加模型文件}
+
+
+\mycontent{添加的模型需要进行解析操作，最新的版本在导入模型后可以自动解析，如果不能自动解析，可以通过图5-5的右键操作进行手动解析。解析成功后，信息窗口会有解析成功提示。}
+
+\myfig{0.9}{use_4}{解析模型}
+
+\newpage
+
+\mycontent{接下来需要对解析后的模型进行算法配置，{\color{red}\textbf{这里需要注意的是只要解析后的模型才能进行算法配置，此时解析后的模型需要被选中，如果发现无法选择算法，需要检查模型是否解析，模型是否选中。}}然后进行图5-6所示的操作，这里常用的两个算法有For算法，可以对变量空间进行遍历。遗传算法用来进行全局优化。}
+
+\myfig{0.9}{use_5}{选择算法}
+
+\newpage
+
+\mycontent{以遗传算法为例，算法配置面板如图5-7所示，这里可以按照需求修改每代种群的个数和遗传代数，其他参数按照默认值即可。}
+
+\myfig{0.9}{use_6}{遗传算法配置}
+
+\mycontent{然后进行变量范围设置，点击 + 添加模型中的变量，编码长度控制了变量优化时的精度，具体的公式为：$\frac{max-min}{2^n-1}$，其中n为编码长度，max，min分别为变量最大值和最小值。一般情况下，需要勾选参数制约来设置参数之间的大小关系。{\color{red}\textbf{当添加多个变量时，需要按照HFSS中的模型变量顺序依次进行添加，切不可错乱顺序。}}}
+
+\myfig{0.9}{use_7}{变量设置}
+
+\mycontent{参数制约需要在 restrict.ini 中进行编写。第一个制约条件为 [Res1] restrict = ...。第二个为 [Res2] restrict = ...。变量用美元符 \$ 表示，不能使用各种括号。示意图如图5-9所示。}
+
+\myfig{0.9}{use_8}{参数制约}
+
+\newpage
+
+\mycontent{数据库的配置如图5-10和图5-11所示。这里面有五个默认的数据库分别为: HFSSDataBase,Project,CST,Research,Graduate 根据需求选择数据库。用户名和密码，这里已经有了默认值，不需要改写。显示集合中，会使用模型的名称作为数据库中集合的名称，点击确认集合按钮后，如果数据库中存在该集合，则会提示，你可以修改集合名称创建一个新集合，也可以继续使用这个集合名称。相关变量配置可以设置模型的一些标签和厚度等信息。}
+
+\myfig{0.9}{use_9_1}{选择数据库配置}
+
+\myfig{0.9}{use_9_2}{数据库配置}
+
+\newpage
+
+\mycontent{适应度的配置过程如图5-12、5-13、5-14所示。这里需要根据实际的设计需求选择不同的适应度插件，对于单个HFSS模型，可以选择 第一项 Fitness\_Simple\_HFSS 插件，如图5-13所示。{\color{red}\textbf{这里需要注意，起始频率和终止频率必须在HFSS模型中设置的扫频范围内。}}。如果需要对多个模型分别设置其适应度，可以选择最后一个插件 Fitness\_Multiple\_Phase 这里可以选择需要计算的S参数类型，阈值比较，相位范围等。}
+
+\myfig{0.9}{use_12}{适应度配置1}
+
+\myfig{0.9}{use_10}{适应度配置2}
+
+\newpage
+
+\myfig{0.9}{use_11}{适应度配置3}
+
+\mycontent{所有设置完成后，需要将工程进行保存，具体操作如图5-15所示。}
+
+\myfig{0.5}{use_13_0}{保存工程}
+
+\newpage
+
+\mycontent{打开任务管理面板，添加任务，输入需要的计算节点数目。然后点击 开始 按钮即可启动任务。}
+
+\myfig{0.9}{use_13}{在任务管理面板中启动任务}
+
+\newpage
+
+\subsection{MIDIS操作简化流程}
+
+\mycontent{第一小节具体介绍了操作的流程和需要注意的事项(红色加粗部分)，可以将以上内容简化为图5-17所示的流程图。}
+
+\myfig{0.45}{4-2}{MIDIS操作流程图}
+
+\newpage
+
+\subsection{MIDIS源代码打包}
+
+\mycontent{针对Python的打包工具主要有三种，具体区别如图5-18所示。}
+
+\myfig{0.6}{4-1}{Python打包工具对比}
+
+\mycontent{这里我们使用PyInstaller进行MIDIS的打包，首先按照python2.7 版本的 PyInstaller工具包，然后在命令行窗口定位到MIDIS的主py文件目录，这里需要注意，整个路径不能有中文字符，然后执行下面代码即可。}
+
+\begin{lstlisting}
+pyinstaller -F --icon=.\\MIDIS.ico -c MIDIS.py
+\end{lstlisting}
+
+\mycontent{其中 第一项 \-F 指定打包的exe文件的图标，-c MIDIS.py 需要打包的主py文件。成功打包后，会在MIDIS目录下产生两个文件夹，分别为 build 和 dist 其中 打包的exe文件位于dist文件夹中。最后需要将exe文件和插件代码以及一些图片，外部文本文件拷贝在一起形成完整的打包软件。最终效果图如图5-19所示。}
+
+\myfig{0.8}{4-3}{MIDIS打包效果图}
+
+\mycontent{使用PyInstaller在MIDIS打包过程中会遇到一些问题，就本人在打包过程中遇到的一些问题与解决方案给出以下说明。}
+
+\begin{enumerate}[itemindent=1em] 
+\item \mycontent{{\color{red}\textbf{ascii / utf8 codec can't encode character ... in position ...}}}
+
+\mycontent{这种情况一般是因为编码问题，首先检查源码文件中是否有中文路径。然后对应着错误提示
+找到出错的文件，这里我遇到的是ntpath.py 的编码问题，
+第一步 在 python下的lib下的ntpath.py中添加}
+\begin{lstlisting}
+#coding=utf-8
+import sys   
+reload（sys） 
+sys.setdefaultencoding('utf-8')	
+\end{lstlisting}
+\mycontent{第二步：
+将约84行的result\_path = result\_path+ p\_path替换为result\_path = str(result\_path) + str(p\_path)。}
+
+
+\item \mycontent{{\color{red}\textbf{no module named ...}}}
+
+\mycontent{很明显，在编译过程中找不到需要的库，但是我们在Python环境中是可以运行的，这些库也已经安装过。
+这里可能有一个原因，在安装Python库的过程中，有两种安装方式，一种是将库的源码安装到site-packages中,第二种方式是将库的源文件
+进行编译打包后安装到目录中(egg文件)。第二种方式PyInstaller是无法解析打包文件中的库，会报错。
+}
+
+\mycontent{首先我们在Python目录中找到报错的库，确认库存在，如果是只有egg文件，且没有其他同名目录文件，
+则需要下载源代码重新安装到目录中，或者直接将同名目录代码拷贝到 site-packages 中去。
+}
+
+\item \mycontent{{\color{red}\textbf{No module named ... 找不到库的依赖文件}}}
+
+\mycontent{和上一个问题不同的是，它并不缺少库，而是找不到库的一个依赖文件，但是经过检查
+库的源文件和依赖文件也在。这时可以采用的解决方案是将该包拷贝到程序源代码目录下
+，然后在代码主py文件中强制将该包导入。
+在安装过程中我遇到的问题是 No module named FxiTk,并且在编译日志中看到
+WARNING : Removing import "FixTk"
+FxiTk.py是Tkinter库的依赖文件。将该文件所在的目录(lib-tk)拷贝到代码目录中，然后在程序主Py文件(MIDIS.py)
+添加一行代码: sys.path.append('lib-tk')}
+
+\item \mycontent{{\color{red}\textbf{运行 exe 文件 卡死}}}
+
+\mycontent{请检查中文路径，将文件放在全英文环境中，然后重新运行。}
+
+\item \mycontent{{\color{red}\textbf{缺少 DLL 或其他与Windows环境相关的错误}}}
+
+\mycontent{这可能和Windows环境有关，检查 microsoft visual c++ 的版本,如果版本过高，请降至
+microsoft visual c++ 2010。}
+
+\end{enumerate}
+
+\vspace{0.5cm}
+
+\mycontent{以上就是我遇到的一些常见问题，当然在具体操作过程中也许还会遇到一些其他问题，因为
+这个我没有遇到过，所有无法给出解决方案。当遇到问题时，希望能够冷静等待，不要轻易放弃，追根溯源，一定
+会找到一个解决办法。}
+
+
